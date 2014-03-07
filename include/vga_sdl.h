@@ -44,6 +44,7 @@ private:
 	SDL_Color      game_pal[VGA_PALETTE_SIZE];
 	SDL_Color*     custom_pal;
 	Uint32         video_mode_flags;
+	Uint32         flip_delay;
 
 public:
 	ColorTable*    vga_color_table;
@@ -67,6 +68,8 @@ public:
 	int    is_full_screen();
 	void   toggle_full_screen();
 	void   flip();
+	void   speedup();
+	void   slowdown();
 
 private:
 	int    init_front(VgaBuf*);

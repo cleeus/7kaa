@@ -78,6 +78,9 @@ public:
 	virtual int is_full_screen() =0;
 	virtual void toggle_full_screen() =0;
 	virtual void flip() =0;
+	
+	virtual void speedup() {}
+	virtual void slowdown() {}
 };
 
 //--------------------------------------------//

@@ -536,6 +536,27 @@ static void test_lzw()
 //--------- End of static function test_lzw --------//
 
 
+static void adjust_vga_speed(uint32_t lastProcessTime, uint32_t markTime) {
+  if(config.frame_speed <= 0) {
+    return;
+  }
+  
+  const uint32_t desiredTimedelta = uint32_t(1000/config.frame_speed);
+  const uint32_t timedelta = markTime-lastProcessTime;
+  if( timedelta > desiredTimedelta ) {
+    const uint32_t missingTime = timedelta - desiredTimedelta;
+    if(missingTime > (desiredTimedelta >> 3)) {
+      vga.slowdown();
+    }
+  } else if( timedelta < desiredTimedelta) {
+    const uint32_t availableTime = desiredTimedelta - timedelta;
+    if(availableTime > (desiredTimedelta >> 3)) {
+      vga.speedup();
+    }
+  }
+}
+
+
 //-------- Begin of function Sys::main_loop --------//
 //
 void Sys::main_loop(int isLoadedGame)
@@ -634,6 +655,7 @@ void Sys::main_loop(int isLoadedGame)
 	uint32_t firstUnreadyTime = 0;
 	// ##### patch end Gilbert 17/11 #######//
 
+   uint32_t lastProcessTime = misc.get_time();
    while( 1 )
    {
          // #### begin Gilbert 31/10 ######//
@@ -689,6 +711,8 @@ void Sys::main_loop(int isLoadedGame)
                   long_log->printf("begin process frame %d\n", frame_count);
                }
 #endif
+               adjust_vga_speed(lastProcessTime, markTime);
+               lastProcessTime = markTime;
 
                process(); // also calls 'disp_frame()'
 

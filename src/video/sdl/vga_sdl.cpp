@@ -51,6 +51,7 @@ VgaSDL::VgaSDL()
    custom_pal = NULL;
    vga_color_table = NULL;
    video_mode_flags = SDL_WINDOW_SHOWN;
+   flip_delay = 17;
 }
 //-------- End of function VgaSDL::VgaSDL ----------//
 
@@ -537,12 +538,26 @@ void VgaSDL::toggle_full_screen()
 //-------- End of function VgaSDL::toggle_full_screen ----------//
 
 
+void VgaSDL::speedup()
+{
+  if(flip_delay > 17) {
+    flip_delay--;
+  }
+}
+
+void VgaSDL::slowdown()
+{
+  if(flip_delay < 34) {
+    flip_delay++;
+  }
+}
+
 //-------- Beginning of function VgaSDL::flip ----------//
 void VgaSDL::flip()
 {
    static Uint32 ticks = 0;
    Uint32 cur_ticks = SDL_GetTicks();
-   if (cur_ticks > ticks + 17 || cur_ticks < ticks) {
+   if (cur_ticks > ticks + flip_delay || cur_ticks < ticks) {
       SurfaceSDL *tmp = vga_front.get_buf();
       SDL_Surface *src = tmp->get_surface();
       ticks = cur_ticks;
