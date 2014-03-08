@@ -467,6 +467,7 @@ void VgaSDL::handle_messages()
 
 			 // update ctrl/shift/alt key state
 			 mouse.update_skey_state();
+			 SDL_RenderClear(renderer);
 			 SDL_ShowCursor(SDL_DISABLE);
 			 break;
 
