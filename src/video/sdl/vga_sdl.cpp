@@ -563,7 +563,7 @@ void VgaSDL::flip()
       ticks = cur_ticks;
       SDL_BlitSurface(src, NULL, target, NULL);
       SDL_UpdateTexture(texture, NULL, target->pixels, window_pitch);
-      SDL_RenderClear(renderer);
+      //SDL_RenderClear(renderer);
       SDL_RenderCopy(renderer, texture, NULL, NULL);
       SDL_RenderPresent(renderer);
    }
