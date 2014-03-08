@@ -550,19 +550,21 @@ static void adjust_vga_speed(uint32_t timedelta, uint32_t &average_missing_time,
     if(missing_time > (desired_timedelta >> 3)) {
       average_missing_time *= 3;
       average_missing_time += missing_time;
-      average_missing_time <<= 2;
+      average_missing_time >>= 2;
+      //printf("slowdown: missing_time=%d, average_missing_time=%d, average_available_time=%d\n", missing_time, average_missing_time, average_available_time);
       vga.slowdown();
     }
   } else if( timedelta < desired_timedelta) {
     const uint32_t available_time = desired_timedelta - timedelta;
     average_available_time *= 3;
     average_available_time += available_time;
-    average_available_time <<= 2;
+    average_available_time >>= 2;
     
     if(
       available_time > (desired_timedelta >> 3) &&
       average_available_time > average_missing_time<<1
     ) {
+      //printf("speedup: available_time=%d, average_missing_time=%d, average_available_time=%d\n", available_time, average_missing_time, average_available_time);
       average_available_time = 0;
       vga.speedup();	
     }
