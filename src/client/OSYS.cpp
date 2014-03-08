@@ -536,22 +536,35 @@ static void test_lzw()
 //--------- End of static function test_lzw --------//
 
 
-static void adjust_vga_speed(uint32_t lastProcessTime, uint32_t markTime) {
+static void adjust_vga_speed(uint32_t timedelta, uint32_t &average_missing_time, uint32_t &average_available_time) {
   if(config.frame_speed <= 0) {
     return;
   }
+      
+  const uint32_t desired_timedelta = 1000/config.frame_speed;
   
-  const uint32_t desiredTimedelta = uint32_t(1000/config.frame_speed);
-  const uint32_t timedelta = markTime-lastProcessTime;
-  if( timedelta > desiredTimedelta ) {
-    const uint32_t missingTime = timedelta - desiredTimedelta;
-    if(missingTime > (desiredTimedelta >> 3)) {
+  if( timedelta > desired_timedelta ) {
+    average_available_time = 0;
+    
+    const uint32_t missing_time = timedelta - desired_timedelta;
+    if(missing_time > (desired_timedelta >> 3)) {
+      average_missing_time *= 3;
+      average_missing_time += missing_time;
+      average_missing_time <<= 2;
       vga.slowdown();
     }
-  } else if( timedelta < desiredTimedelta) {
-    const uint32_t availableTime = desiredTimedelta - timedelta;
-    if(availableTime > (desiredTimedelta >> 3)) {
-      vga.speedup();
+  } else if( timedelta < desired_timedelta) {
+    const uint32_t available_time = desired_timedelta - timedelta;
+    average_available_time *= 3;
+    average_available_time += available_time;
+    average_available_time <<= 2;
+    
+    if(
+      available_time > (desired_timedelta >> 3) &&
+      average_available_time > average_missing_time<<1
+    ) {
+      average_available_time = 0;
+      vga.speedup();	
     }
   }
 }
@@ -655,7 +668,9 @@ void Sys::main_loop(int isLoadedGame)
 	uint32_t firstUnreadyTime = 0;
 	// ##### patch end Gilbert 17/11 #######//
 
-   uint32_t lastProcessTime = misc.get_time();
+   uint32_t average_missing_time = 1;
+   uint32_t average_available_time = 0;
+   uint32_t last_frame_time = misc.get_time();
    while( 1 )
    {
          // #### begin Gilbert 31/10 ######//
@@ -700,6 +715,9 @@ void Sys::main_loop(int isLoadedGame)
             else
                rc = should_next_frame();
 
+	    adjust_vga_speed(markTime-last_frame_time, average_missing_time, average_available_time);
+	    last_frame_time = markTime;
+	    
             if( rc )
             {
                LOG_BEGIN;
@@ -711,8 +729,6 @@ void Sys::main_loop(int isLoadedGame)
                   long_log->printf("begin process frame %d\n", frame_count);
                }
 #endif
-               adjust_vga_speed(lastProcessTime, markTime);
-               lastProcessTime = markTime;
 
                process(); // also calls 'disp_frame()'
 
