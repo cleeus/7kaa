@@ -723,6 +723,16 @@ int MouseSDL::release_click(int x1, int y1, int x2, int y2,int buttonId)
 //--------- End of MouseSDL::release_click --------------//
 
 #ifdef SMOOTH_MOUSE_ACCEL
+// Implements a arctan-based smooth mouse acceleration function.
+//  Mouse movements with up to 1px relative movement in each direction will
+//  not be accelerated. Acceleration for faster mouse movements will increase
+//  and then cap of at a factor of 3.5.
+// There are two tunables: sma_scale and sma_slope.
+//  - sma_scale - Scales the height of the acceleration curve with the effect
+//    that the maximum possible acceleration value can increase/decrease.
+//  - sma_slope - Increases the steepness off the acceleration curve.
+//    The effect is a faster or slower increase of the acceleration factor.
+//  I'm getting good results with sma_scale = 1.5 and sma_slope = 1.2
 
 struct sma_func_point {
 	int threshold;
@@ -736,7 +746,7 @@ struct sma_func_point {
 #define SMA_FP_BITS 10
 #define SMA_FUNC_POINT(x, f_x)   { (x) << SMA_FP_BITS , (f_x) }
 static const sma_func_point sma_func_table[] = {
-        {0,0}, //0th entry must have threshold 0
+	{0,0}, //0th entry must have threshold 0
 	SMA_FUNC_POINT(2  ,   0    ), //no accel below 1px in each direction
 	SMA_FUNC_POINT(3  ,   0.283),
 	SMA_FUNC_POINT(2*2,   0.316),
@@ -749,25 +759,26 @@ static const sma_func_point sma_func_table[] = {
 	SMA_FUNC_POINT(16*16, 3.318),
 	SMA_FUNC_POINT(18*18, 3.428),
 	SMA_FUNC_POINT(20*20, 3.508),
-	{INT_MAX,3.508}, //last entry must have threshold INT_MAX
+	{INT_MAX,3.508} //last entry must have threshold INT_MAX
 };
 #undef SMA_FUNC_POINT
-static const float sma_scale = 1.5;
-static const float sma_slope = 1.2;
+static const float sma_scale = 1.0;
+static const float sma_slope = 1.0;
 
 static float sma_linear_interpolate(int p1x, float p1y, int p2x, float p2y, float p3x) {
-  //f(x) = mx + n
-  const int delta_x = (p2x-p1x)>>SMA_FP_BITS;
-  const float delta_y = p2y - p1y;
-  const float m = delta_x == 0 ? 1 : delta_y / static_cast<float>(delta_x);
-  
-  //n = f(x) - mx;
-  const float n = p2y - m * static_cast<float>(p2x) / static_cast<float>(1<<SMA_FP_BITS);
-  
-  return m * p3x + n;
+	//f(x) = mx + n
+	const int delta_x = (p2x-p1x)>>SMA_FP_BITS;
+	const float delta_y = p2y - p1y;
+	const float m = delta_x == 0 ? 1 : delta_y / static_cast<float>(delta_x);
+	
+	//n = f(x) - mx;
+	const float n = p2y - m * static_cast<float>(p2x) / static_cast<float>(1<<SMA_FP_BITS);
+	
+	return m * p3x + n;
 }
 
-#if 1
+
+#if 0
 #define SMA_iroundf(x) ( (x) > 0 ? \
   (((x)-(float)((int)(x))) <  0.5f ? (int)(x) : (int)((x)+0.5f)) : \
   (((x)-(float)((int)(x))) > -0.5f ? (int)(x) : (int)((x)-0.5f)) \
@@ -778,8 +789,19 @@ static float sma_linear_interpolate(int p1x, float p1y, int p2x, float p2y, floa
 
 
 static void smooth_mouse_accel(const int dx, const int dy, int &cur_x, int &cur_y) {
+	// Calculate the length of vector (dx,dy)
+	// then lookup acceleration factor from arctan function table
+	// then apply the factor to dx/dy and add to cur_x/cur_y.
+	//
+	// Table lookups are improved with a linear interpolation to better
+	// fit the real arctan acceleration curve.
+	// The table index is kept in fixed point 22.10 format be able to
+	// apply the sma_slope factor and not having to do float comparisons until
+	// the right point in the curve is found.
+  
 	int dsqr = dx*dx + dy*dy;
-	const float fdsqr = static_cast<float>(dsqr) * sma_slope;
+	//apply the sma_slop tunable -- effectively scaling the incoming mouse speed
+	const float fdsqr = static_cast<float>(dsqr) * sma_slope;	
 	dsqr = static_cast<int>(fdsqr * (1<<SMA_FP_BITS));
 	  
 	const int sma_func_table_count = sizeof(sma_func_table)/sizeof(sma_func_table[0]);
