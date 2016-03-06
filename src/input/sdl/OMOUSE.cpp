@@ -29,6 +29,7 @@
 #include <KEY.h>
 #include <OSYS.h>
 #include <ctype.h>
+#include <limits.h>
 #include <dbglog.h>
 
 DBGLOG_DEFAULT_CHANNEL(Mouse);
@@ -721,6 +722,91 @@ int MouseSDL::release_click(int x1, int y1, int x2, int y2,int buttonId)
 }
 //--------- End of MouseSDL::release_click --------------//
 
+#ifdef SMOOTH_MOUSE_ACCEL
+
+struct sma_func_point {
+	int threshold;
+	float factor;
+};
+
+//value table for atan((x-7.5)/4) * 1.45 + 1.65 where x = sqrt(threshold)
+// gnuplot> plot [0:20] atan((x-7.5)/4) * 1.45 + 1.68 , 0.25 , 0.33, 3.5
+// flattened below x=sqrt(2) and above x=20
+// x points are in fixed-point (1<<SMA_FP_BITS)
+#define SMA_FP_BITS 10
+#define SMA_FUNC_POINT(x, f_x)   { (x) << SMA_FP_BITS , (f_x) }
+static const sma_func_point sma_func_table[] = {
+        {0,0}, //0th entry must have threshold 0
+	SMA_FUNC_POINT(2  ,   0    ), //no accel below 1px in each direction
+	SMA_FUNC_POINT(3  ,   0.283),
+	SMA_FUNC_POINT(2*2,   0.316),
+	SMA_FUNC_POINT(4*4,   0.639),
+	SMA_FUNC_POINT(6*6,   1.161),
+	SMA_FUNC_POINT(8*8,   1.859),
+	SMA_FUNC_POINT(10*10, 2.489),
+	SMA_FUNC_POINT(12*12, 2.903),
+	SMA_FUNC_POINT(14*14, 3.157),
+	SMA_FUNC_POINT(16*16, 3.318),
+	SMA_FUNC_POINT(18*18, 3.428),
+	SMA_FUNC_POINT(20*20, 3.508),
+	{INT_MAX,3.508}, //last entry must have threshold INT_MAX
+};
+#undef SMA_FUNC_POINT
+static const float sma_scale = 1.5;
+static const float sma_slope = 1.2;
+
+static float sma_linear_interpolate(int p1x, float p1y, int p2x, float p2y, float p3x) {
+  //f(x) = mx + n
+  const int delta_x = (p2x-p1x)>>SMA_FP_BITS;
+  const float delta_y = p2y - p1y;
+  const float m = delta_x == 0 ? 1 : delta_y / static_cast<float>(delta_x);
+  
+  //n = f(x) - mx;
+  const float n = p2y - m * static_cast<float>(p2x) / static_cast<float>(1<<SMA_FP_BITS);
+  
+  return m * p3x + n;
+}
+
+#if 1
+#define SMA_iroundf(x) ( (x) > 0 ? \
+  (((x)-(float)((int)(x))) <  0.5f ? (int)(x) : (int)((x)+0.5f)) : \
+  (((x)-(float)((int)(x))) > -0.5f ? (int)(x) : (int)((x)-0.5f)) \
+)
+#else
+#define SMA_iroundf(x) (static_cast<int>(roundf( x )))
+#endif
+
+
+static void smooth_mouse_accel(const int dx, const int dy, int &cur_x, int &cur_y) {
+	int dsqr = dx*dx + dy*dy;
+	const float fdsqr = static_cast<float>(dsqr) * sma_slope;
+	dsqr = static_cast<int>(fdsqr * (1<<SMA_FP_BITS));
+	  
+	const int sma_func_table_count = sizeof(sma_func_table)/sizeof(sma_func_table[0]);
+	for(int i=1; i<sma_func_table_count; i++) {
+		const sma_func_point &p2 = sma_func_table[i];
+		if( dsqr < p2.threshold ) {
+		  const sma_func_point &p1 = sma_func_table[i-1];
+		  
+		  const float sma_factor = sma_linear_interpolate(p1.threshold, p1.factor, p2.threshold, p2.factor, fdsqr);
+		  const float sma = sma_factor*sma_scale + 1.0f;
+		  
+		  const float f_new_dx = sma * static_cast<float>(dx);
+		  const float f_new_dy = sma * static_cast<float>(dy);
+		  
+		  const int new_dx = SMA_iroundf(f_new_dx);
+		  const int new_dy = SMA_iroundf(f_new_dy);
+		  
+		  cur_x += new_dx;
+		  cur_y += new_dy;
+		  
+		  //printf("(i:%d,t:%d,dsqr:%d,fdsqr:%f,s:%f,delta: %d,%d )\n", i, p1.threshold >> SMA_FP_BITS, dsqr, fdsqr, sma, new_dx-dx, new_dy-dy);
+		  break;
+		}
+	}
+}
+#undef SMA_iroundf
+#endif
 
 //--------- Begin of MouseSDL::poll_event ----------//
 //
@@ -744,7 +830,9 @@ void MouseSDL::poll_event()
 		switch (event.type) {
 		case SDL_MOUSEMOTION:
 			if(vga.is_input_grabbed()) {
-#ifdef MOUSE_ACCEL
+#ifdef SMOOTH_MOUSE_ACCEL
+				smooth_mouse_accel(event.motion.xrel, event.motion.yrel, cur_x, cur_y);				
+#elif defined(MOUSE_ACCEL)
 				cur_x += micky_to_displacement(event.motion.xrel);
 				cur_y += micky_to_displacement(event.motion.yrel);
 #else
@@ -759,6 +847,8 @@ void MouseSDL::poll_event()
 					cur_y = bound_y1;
 				else if(cur_y > bound_y2)
 					cur_y = bound_y2;
+				
+				
 			} else {
 				cur_x = event.motion.x;
 				cur_y = event.motion.y;
@@ -968,11 +1058,33 @@ void MouseSDL::reset_click()
 }
 //--------- End of MouseSDL::reset_click --------------//
 
-
 // ------ Begin of MouseSDL::micky_to_displacement -------//
+struct m2d_table_entry {
+	int threshold;
+	float factor;
+};
+
+static const m2d_table_entry m2d_table[] = {
+	{32, 4},
+	{24, 3},
+	{12, 2},
+	{6,  1},
+	{3,  0.5},
+	{2,  0.25},
+};
+
 int MouseSDL::micky_to_displacement(int d)
 {
-	return abs(d) >= double_speed_threshold ? d+d : d;
+	int abs_d = abs(d);
+	
+	const float strength = 1.5;
+
+	const int m2d_table_count = sizeof(m2d_table)/sizeof(m2d_table[0]);
+	for(int i=0; i<m2d_table_count; i++) {
+		if( abs_d >= m2d_table[i].threshold ) return (int)(((m2d_table[i].factor*strength)+1.0f) * (float)d);
+	}
+
+	return d;
 }
 // ------ End of MouseSDL::micky_to_displacement -------//
 
