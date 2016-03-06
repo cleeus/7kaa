@@ -1081,32 +1081,10 @@ void MouseSDL::reset_click()
 //--------- End of MouseSDL::reset_click --------------//
 
 // ------ Begin of MouseSDL::micky_to_displacement -------//
-struct m2d_table_entry {
-	int threshold;
-	float factor;
-};
-
-static const m2d_table_entry m2d_table[] = {
-	{32, 4},
-	{24, 3},
-	{12, 2},
-	{6,  1},
-	{3,  0.5},
-	{2,  0.25},
-};
 
 int MouseSDL::micky_to_displacement(int d)
 {
-	int abs_d = abs(d);
-	
-	const float strength = 1.5;
-
-	const int m2d_table_count = sizeof(m2d_table)/sizeof(m2d_table[0]);
-	for(int i=0; i<m2d_table_count; i++) {
-		if( abs_d >= m2d_table[i].threshold ) return (int)(((m2d_table[i].factor*strength)+1.0f) * (float)d);
-	}
-
-	return d;
+	return abs(d) >= double_speed_threshold ? d+d : d;
 }
 // ------ End of MouseSDL::micky_to_displacement -------//
 
