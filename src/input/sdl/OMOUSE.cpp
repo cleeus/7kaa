@@ -780,8 +780,8 @@ static float sma_linear_interpolate(int p1x, float p1y, int p2x, float p2y, floa
 
 #if 0
 #define SMA_iroundf(x) ( (x) > 0 ? \
-  (((x)-(float)((int)(x))) <  0.5f ? (int)(x) : (int)((x)+0.5f)) : \
-  (((x)-(float)((int)(x))) > -0.5f ? (int)(x) : (int)((x)-0.5f)) \
+	(((x)-(float)((int)(x))) <  0.5f ? (int)(x) : (int)((x)+0.5f)) : \
+	(((x)-(float)((int)(x))) > -0.5f ? (int)(x) : (int)((x)-0.5f)) \
 )
 #else
 #define SMA_iroundf(x) (static_cast<int>(roundf( x )))
@@ -798,7 +798,7 @@ static void smooth_mouse_accel(const int dx, const int dy, int &cur_x, int &cur_
 	// The table index is kept in fixed point 22.10 format be able to
 	// apply the sma_slope factor and not having to do float comparisons until
 	// the right point in the curve is found.
-  
+	
 	int dsqr = dx*dx + dy*dy;
 	//apply the sma_slop tunable -- effectively scaling the incoming mouse speed
 	const float fdsqr = static_cast<float>(dsqr) * sma_slope;	
@@ -808,22 +808,22 @@ static void smooth_mouse_accel(const int dx, const int dy, int &cur_x, int &cur_
 	for(int i=1; i<sma_func_table_count; i++) {
 		const sma_func_point &p2 = sma_func_table[i];
 		if( dsqr < p2.threshold ) {
-		  const sma_func_point &p1 = sma_func_table[i-1];
-		  
-		  const float sma_factor = sma_linear_interpolate(p1.threshold, p1.factor, p2.threshold, p2.factor, fdsqr);
-		  const float sma = sma_factor*sma_scale + 1.0f;
-		  
-		  const float f_new_dx = sma * static_cast<float>(dx);
-		  const float f_new_dy = sma * static_cast<float>(dy);
-		  
-		  const int new_dx = SMA_iroundf(f_new_dx);
-		  const int new_dy = SMA_iroundf(f_new_dy);
-		  
-		  cur_x += new_dx;
-		  cur_y += new_dy;
-		  
-		  //printf("(i:%d,t:%d,dsqr:%d,fdsqr:%f,s:%f,delta: %d,%d )\n", i, p1.threshold >> SMA_FP_BITS, dsqr, fdsqr, sma, new_dx-dx, new_dy-dy);
-		  break;
+			const sma_func_point &p1 = sma_func_table[i-1];
+			
+			const float sma_factor = sma_linear_interpolate(p1.threshold, p1.factor, p2.threshold, p2.factor, fdsqr);
+			const float sma = sma_factor*sma_scale + 1.0f;
+			
+			const float f_new_dx = sma * static_cast<float>(dx);
+			const float f_new_dy = sma * static_cast<float>(dy);
+			
+			const int new_dx = SMA_iroundf(f_new_dx);
+			const int new_dy = SMA_iroundf(f_new_dy);
+			
+			cur_x += new_dx;
+			cur_y += new_dy;
+			
+			//printf("(i:%d,t:%d,dsqr:%d,fdsqr:%f,s:%f,delta: %d,%d )\n", i, p1.threshold >> SMA_FP_BITS, dsqr, fdsqr, sma, new_dx-dx, new_dy-dy);
+			break;
 		}
 	}
 }
