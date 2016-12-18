@@ -39,7 +39,7 @@ if(NOT EXISTS "${SEVENKAA_CONFIG_OUTPUT_DIR}")
 endif()
 set(SEVENKAA_COMFIG_INCLUDE_FILE "${SEVENKAA_CONFIG_OUTPUT_DIR}/config.h")
 
-set(SEVENKAA_VERSION_TAG "trunk" CACHE STRING "The version number/tag of the build")
+set(SEVENKAA_VERSION_TAG "git-dev-build" CACHE STRING "The version number/tag of the build")
 set(SEVENKAA_PROGRAM_NAME "7kaa")
 
 set(SEVENKAA_VERSION "\"${SEVENKAA_VERSION_TAG}\"")

@@ -119,28 +119,28 @@
 
 
 /* Version number of package */
-#undef VERSION
+#define VERSION @SEVENKAA_VERSION@
 
 /* Name of package */
-#undef PACKAGE
+#define PACKAGE @SEVENKAA_PACKAGE@
 
 /* Define to the address where bug reports for this package should be sent. */
-#undef PACKAGE_BUGREPORT
+#define PACKAGE_BUGREPORT @SEVENKAA_PACKAGE_BUGREPORT@
 
 /* Define to the path to the game data */
-#undef PACKAGE_DATA_PATH
+#define PACKAGE_DATA_PATH @SEVENKAA_PACKAGE_DATA_PATH@
 
 /* Define to the full name of this package. */
-#undef PACKAGE_NAME
+#define PACKAGE_NAME @SEVENKAA_PACKAGE_NAME@
 
 /* Define to the full name and version of this package. */
-#undef PACKAGE_STRING
+#define PACKAGE_STRING @SEVENKAA_PACKAGE_STRING@
 
 /* Define to the one symbol short name of this package. */
-#undef PACKAGE_TARNAME
+#define PACKAGE_TARNAME @SEVENKAA_PACKAGE_TARNAME@
 
 /* Define to the home page for this package. */
-#undef PACKAGE_URL
+#define PACKAGE_URL @SEVENKAA_PACKAGE_URL@
 
 /* Define to the version of this package. */
-#undef PACKAGE_VERSION
+#define PACKAGE_VERSION @SEVENKAA_PACKAGE_VERSION@
