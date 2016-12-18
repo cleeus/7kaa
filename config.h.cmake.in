@@ -1,0 +1,146 @@
+/* Define to 1 if building with debugging features */
+#cmakedefine DEBUG @DEBUG@
+
+/* Define to 1 if building with element access checking for dynamic arrays */
+#cmakedefine DYNARRAY_DEBUG_ELEMENT_ACCESS @DYNARRAY_DEBUG_ELEMENT_ACCESS@
+
+/* Define to 1 if translation of program messages to the user's native
+   language is requested. */
+#cmakedefine ENABLE_NLS @ENABLE_NLS@
+
+/* Define to 1 if you have the MacOS X function CFLocaleCopyCurrent in the
+   CoreFoundation framework. */
+#undef HAVE_CFLOCALECOPYCURRENT
+
+/* Define to 1 if you have the MacOS X function CFPreferencesCopyAppValue in
+   the CoreFoundation framework. */
+#undef HAVE_CFPREFERENCESCOPYAPPVALUE
+
+/* Define if the GNU dcgettext() function is already present or preinstalled.
+   */
+#cmakedefine HAVE_DCGETTEXT
+
+/* Define if the GNU gettext() function is already present or preinstalled. */
+#cmakedefine HAVE_GETTEXT
+
+/* Define if you have the iconv() function and it works. */
+#cmakedefine HAVE_ICONV @HAVE_ICONV@
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#cmakedefine HAVE_INTTYPES_H @HAVE_INTTYPES_H@
+
+/* Define to 1 if you have the <memory.h> header file. */
+#cmakedefine HAVE_MEMORY_H @HAVE_MEMORY_H@
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#cmakedefine HAVE_STDINT_H @HAVE_STDINT_H@
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#cmakedefine HAVE_STDLIB_H @HAVE_STDLIB_H@
+
+/* Define to 1 if you have the <strings.h> header file. */
+#cmakedefine HAVE_STRINGS_H @HAVE_STRINGS_H@
+
+/* Define to 1 if you have the <string.h> header file. */
+#cmakedefine HAVE_STRING_H @HAVE_STRING_H@
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#cmakedefine HAVE_SYS_STAT_H @HAVE_SYS_STAT_H@
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#cmakedefine HAVE_SYS_TYPES_H @HAVE_SYS_TYPES_H@
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#cmakedefine HAVE_UNISTD_H @HAVE_UNISTD_H@
+
+/* Define to 1 if you have the `_NSGetExecutablePath' function. */
+#undef HAVE__NSGETEXECUTABLEPATH
+
+/* Define to the locale path */
+#undef LOCALE_PATH
+
+/* Define to 1 if not monitoring memory alloc */
+#undef NO_MEM_CLASS
+
+/* Define to 1 if not using Windows headers */
+#cmakedefine NO_WINDOWS @NO_WINDOWS@
+
+/* Define to the equivalent of <AL/alc.h> on your system */
+#cmakedefine OPENAL_ALC_H @OPENAL_ALC_H@
+
+/* Define to the equivalent of <AL/al.h> on your system */
+#cmakedefine OPENAL_AL_H @OPENAL_AL_H@
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define to 1 if using assembly routines */
+#cmakedefine USE_ASM @USE_ASM@
+
+/* Define to 1 if using OpenAL as the audio backend */
+#cmakedefine USE_OPENAL @USE_OPENAL@
+
+/* Define to 1 if using SDL as the video/input backend */
+#cmakedefine USE_SDL @USE_SDL@
+
+
+/* Define to the type of a signed integer type of width exactly 8 bits if such
+   a type exists and the standard includes do not define it. */
+#cmakedefine int8_t @int8_t@
+
+/* Define to the type of a signed integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#cmakedefine int16_t @int16_t@
+
+/* Define to the type of a signed integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#cmakedefine int32_t @int32_t@
+
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#cmakedefine size_t @size_t@
+
+/* Define to the type of an unsigned integer type of width exactly 8 bits if
+   such a type exists and the standard includes do not define it. */
+#cmakedefine uint8_t @uint8_t@
+
+/* Define to the type of an unsigned integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#cmakedefine uint16_t @uint16_t@
+
+/* Define to the type of an unsigned integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#cmakedefine uint32_t @uint32_t@
+
+/* Define to the type of an unsigned integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+#cmakedefine uint64_t @uint64_t@
+
+
+
+/* Version number of package */
+#undef VERSION
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the path to the game data */
+#undef PACKAGE_DATA_PATH
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
